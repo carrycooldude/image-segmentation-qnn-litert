@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.ai.edge.examples.image_segmentation.view
+package com.carrycooldude.image_segmentation.view
 
 import android.graphics.Bitmap
 import android.graphics.Matrix
@@ -24,7 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.scale
-import com.google.ai.edge.examples.image_segmentation.OverlayInfo
+import com.carrycooldude.image_segmentation.OverlayInfo
 
 @Composable
 fun SegmentationOverlay(modifier: Modifier = Modifier, overlayInfo: OverlayInfo, lensFacing: Int) {

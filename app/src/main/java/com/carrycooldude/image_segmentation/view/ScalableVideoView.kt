@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.ai.edge.examples.image_segmentation.view
+package com.carrycooldude.image_segmentation.view
 
 import android.content.Context
 import android.widget.VideoView

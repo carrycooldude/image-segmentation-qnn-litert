@@ -22,11 +22,11 @@ plugins {
 }
 
 android {
-  namespace = "com.google.ai.edge.examples.image_segmentation"
+  namespace = "com.carrycooldude.image_segmentation"
   compileSdk = 34
 
   defaultConfig {
-    applicationId = "com.google.ai.edge.examples.image_segmentation"
+    applicationId = "com.carrycooldude.image_segmentation"
     minSdk = 31
     targetSdk = 33
     versionCode = 1

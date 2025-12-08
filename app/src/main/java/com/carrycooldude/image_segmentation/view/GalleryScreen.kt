@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.ai.edge.examples.image_segmentation.view
+package com.carrycooldude.image_segmentation.view
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -32,7 +32,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.drawable.toBitmap
 import coil.compose.AsyncImage
 import coil.imageLoader
-import com.google.ai.edge.examples.image_segmentation.UiState
+import com.carrycooldude.image_segmentation.UiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive

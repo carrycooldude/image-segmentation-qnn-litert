@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.ai.edge.examples.image_segmentation
+package com.carrycooldude.image_segmentation
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -23,7 +23,7 @@ import android.graphics.Matrix
 import android.os.SystemClock
 import android.util.Log
 import androidx.core.graphics.scale
-import com.google.ai.edge.examples.image_segmentation.TensorUtils.logTensorStats
+import com.carrycooldude.image_segmentation.TensorUtils.logTensorStats
 import com.google.ai.edge.litert.Accelerator
 import com.google.ai.edge.litert.BuiltinNpuAcceleratorProvider
 import com.google.ai.edge.litert.CompiledModel
