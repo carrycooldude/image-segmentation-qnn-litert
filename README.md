@@ -89,9 +89,6 @@ android_jit/
 └── fetch_qualcomm_library.sh     # Download Qualcomm SDK libs
 ```
 
-## License
-
-Copyright 2025 The Google AI Edge Authors. Licensed under Apache 2.0.
 
 ## References
 
