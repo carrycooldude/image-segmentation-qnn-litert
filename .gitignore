@@ -1,0 +1,54 @@
+# Android Studio
+.idea/
+*.iml
+.gradle/
+local.properties
+.DS_Store
+build/
+captures/
+.externalNativeBuild
+.cxx
+
+# Build outputs
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Gradle
+.gradle
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Local configuration
+*.properties
+
+# Logs
+*.log
+
+# NDK
+obj/
+
+# IntelliJ
+out/
+
+# Keystore files
+*.jks
+*.keystore
+
+# Temporary files
+*.swp
+*.swo
+*~
+
+# Downloaded model (regenerated on build)
+app/src/main/assets/*.tflite
+
+# Qualcomm SDK libraries (downloaded by fetch script)
+litert_npu_runtime_libraries/*/src/main/jni/arm64-v8a/*.so
+
+# Temporary download files
+*.zip
+fetch_qualcomm_library.sh
+litert_npu_runtime_libraries_jit.zip
