@@ -203,6 +203,9 @@ class MainActivity : ComponentActivity() {
     onDelegateSelected: (ImageSegmentationHelper.AcceleratorEnum) -> Unit,
     onFlipCamera: () -> Unit,
   ) {
+    val viewModel: MainViewModel by viewModels { MainViewModel.getFactory(this) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    
     Column(modifier = modifier.padding(horizontal = 20.dp, vertical = 5.dp)) {
       Image(
         modifier =
@@ -233,6 +236,7 @@ class MainActivity : ComponentActivity() {
       OptionMenu(
         label = stringResource(id = R.string.accelerator),
         options = ImageSegmentationHelper.AcceleratorEnum.entries.map { it.name },
+        activeAccelerator = uiState.activeAccelerator,
       ) {
         onDelegateSelected(ImageSegmentationHelper.AcceleratorEnum.valueOf(it))
       }
@@ -244,10 +248,19 @@ class MainActivity : ComponentActivity() {
     label: String,
     modifier: Modifier = Modifier,
     options: List<String>,
+    activeAccelerator: ImageSegmentationHelper.AcceleratorEnum? = null,
     onOptionSelected: (option: String) -> Unit,
   ) {
     var expanded by remember { mutableStateOf(false) }
     var option by remember { mutableStateOf(options.first()) }
+    
+    // Update option when activeAccelerator changes
+    LaunchedEffect(activeAccelerator) {
+      activeAccelerator?.let {
+        option = it.name
+      }
+    }
+    
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
       Text(modifier = Modifier.weight(0.5f), text = label, fontSize = 15.sp)
       Box {
@@ -255,7 +268,19 @@ class MainActivity : ComponentActivity() {
           modifier = Modifier.clickable { expanded = true },
           verticalAlignment = Alignment.CenterVertically,
         ) {
-          Text(text = option, fontSize = 15.sp)
+          // Display current option with active indicator
+          val displayText = if (activeAccelerator?.name == option) {
+            when (option) {
+              "NPU" -> "$option ⚡" // Lightning for NPU (fastest)
+              "GPU" -> "$option 🔥" // Fire for GPU (fast)
+              "CPU" -> "$option ⚙️" // Gear for CPU
+              else -> option
+            }
+          } else {
+            option
+          }
+          
+          Text(text = displayText, fontSize = 15.sp)
           Spacer(modifier = Modifier.width(5.dp))
           Icon(
             imageVector = Icons.Default.ArrowDropDown,
@@ -266,7 +291,16 @@ class MainActivity : ComponentActivity() {
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
           for (optionItem in options) {
             DropdownMenuItem(
-              content = { Text(optionItem, fontSize = 15.sp) },
+              content = { 
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                  Text(optionItem, fontSize = 15.sp)
+                  // Show checkmark for active accelerator
+                  if (activeAccelerator?.name == optionItem) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("✓", fontSize = 15.sp, color = MaterialTheme.colors.secondary)
+                  }
+                }
+              },
               onClick = {
                 option = optionItem
                 onOptionSelected(option)

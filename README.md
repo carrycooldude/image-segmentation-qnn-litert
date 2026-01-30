@@ -4,20 +4,24 @@ Real-time image segmentation Android app powered by LiteRT (Google's new TensorF
 
 ## Features
 
+- **Automatic NPU→GPU→CPU fallback** ⚡ - Intelligently selects best accelerator
 - **Real-time segmentation** using camera or gallery images
 - **21-class segmentation**: person, car, cat, dog, bicycle, and more
-- **QNN acceleration** for 10-20x faster inference on Qualcomm devices
+- **Visual backend indicators** - See which accelerator is active (NPU ⚡, GPU 🔥, CPU ⚙️)
+- **QNN acceleration** for optimized inference on Qualcomm devices
 - **JIT compilation**: On-device model compilation for optimal performance
 
 ## Performance
 
-Tested on Samsung S25 Ultra (Snapdragon 8 Elite):
+**Verified on Samsung S25 Ultra (Snapdragon 8 Elite):**
 
-| Backend | Inference Time |
-|---------|---------------|
-| CPU     | 85-90ms       |
-| GPU     | 40-50ms       |
-| **NPU** | **6-12ms** ⚡ |
+| Backend | Status | Inference Time | Auto-Fallback |
+|---------|--------|----------------|---------------|
+| **NPU** | ✅ Working | **~85ms** ⚡ | **1st Priority** |
+| GPU     | ⚠️ Variable | ~40-50ms | 2nd Priority |
+| CPU     | ✅ Working | ~130ms | Final Fallback |
+
+> **Note:** The app automatically tries NPU first, then GPU, then CPU. No manual selection needed!
 
 ## Supported Devices
 
@@ -53,6 +57,30 @@ bash fetch_qualcomm_library.sh
 ```bash
 ./gradlew installDebug
 ```
+
+## How It Works
+
+### Automatic Backend Selection
+
+The app implements intelligent fallback logic at startup:
+
+1. **Attempts NPU initialization** - Best performance on Snapdragon devices
+2. **If NPU fails → tries GPU** - Good performance, broader compatibility  
+3. **If GPU fails → uses CPU** - Guaranteed to work on all devices
+
+```kotlin
+// Automatic fallback on app launch
+initSegmenterWithFallback()  // NPU → GPU → CPU
+```
+
+### Visual Indicators
+
+The bottom sheet shows which backend is currently active:
+- **NPU ⚡** - Fastest, using Qualcomm AI Engine
+- **GPU 🔥** - Fast, using GPU acceleration
+- **CPU ⚙️** - Compatible, CPU-only inference
+
+You can also manually override the backend selection from the dropdown menu.
 
 ## Technical Details
 

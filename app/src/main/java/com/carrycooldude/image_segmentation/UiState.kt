@@ -28,6 +28,7 @@ class UiState(
   val inferenceTime: Long = 0L,
   val errorMessage: String? = null,
   val lensFacing: Int = CameraSelector.LENS_FACING_BACK,
+  val activeAccelerator: ImageSegmentationHelper.AcceleratorEnum? = null,
 )
 
 @Immutable class OverlayInfo(val pixels: IntArray, val width: Int, val height: Int)

@@ -53,7 +53,7 @@ class MainViewModel(private val imageSegmentationHelper: ImageSegmentationHelper
   }
 
   init {
-    viewModelScope.launch { imageSegmentationHelper.initSegmenter() }
+    viewModelScope.launch { imageSegmentationHelper.initSegmenterWithFallback() }
   }
 
   private var segmentJob: Job? = null
@@ -101,18 +101,29 @@ class MainViewModel(private val imageSegmentationHelper: ImageSegmentationHelper
 
   private val lensFacing = MutableStateFlow(CameraSelector.LENS_FACING_BACK)
 
+  private val activeAccelerator = MutableStateFlow<ImageSegmentationHelper.AcceleratorEnum?>(null)
+    .also {
+      viewModelScope.launch {
+        imageSegmentationHelper.currentAccelerator.collect { accelerator ->
+          it.value = accelerator
+        }
+      }
+    }
+
   val uiState: StateFlow<UiState> =
-    combine(mediaUri, segmentationUiShareFlow, errorMessage, lensFacing) {
+    combine(mediaUri, segmentationUiShareFlow, errorMessage, lensFacing, activeAccelerator) {
         uri,
         segmentationUiPair,
         error,
-        lensFace ->
+        lensFace,
+        accelerator ->
         UiState(
           mediaUri = uri,
           overlayInfo = segmentationUiPair.first,
           inferenceTime = segmentationUiPair.second,
           errorMessage = error?.message,
           lensFacing = lensFace,
+          activeAccelerator = accelerator,
         )
       }
       .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UiState())

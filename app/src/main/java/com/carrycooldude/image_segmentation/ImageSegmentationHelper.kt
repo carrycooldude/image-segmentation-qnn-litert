@@ -54,16 +54,73 @@ class ImageSegmentationHelper(private val context: Context) {
 
   private val _error = MutableSharedFlow<Throwable?>()
 
+  /** Currently active accelerator backend */
+  val currentAccelerator: SharedFlow<AcceleratorEnum?>
+    get() = _currentAccelerator
+
+  private val _currentAccelerator = MutableSharedFlow<AcceleratorEnum?>(
+    replay = 1,
+    onBufferOverflow = BufferOverflow.DROP_OLDEST
+  )
+
   private val coloredLabels: List<ColoredLabel> = coloredLabels()
 
   // Accessed only with singleThreadDispatcher.
   private var segmenter: Segmenter? = null
   private val singleThreadDispatcher = Dispatchers.IO.limitedParallelism(1, "ModelDispatcher")
 
-  /** Init a CompiledModel from AI Pack. */
+  /** Init a CompiledModel with automatic NPU→GPU→CPU fallback. */
+  suspend fun initSegmenterWithFallback() {
+    cleanup()
+    val fallbackOrder = listOf(
+      AcceleratorEnum.NPU,  // Try NPU first (best for S25 Ultra - Snapdragon 8 Elite)
+      AcceleratorEnum.GPU,  // Fall back to GPU
+      AcceleratorEnum.CPU   // Final fallback to CPU
+    )
+
+    var lastException: Exception? = null
+    
+    for (accelerator in fallbackOrder) {
+      try {
+        Log.i(TAG, "Attempting to initialize with $accelerator...")
+        
+        val acceleratorType = toAccelerator(accelerator)
+        val env = Environment.create(BuiltinNpuAcceleratorProvider(context))
+
+        withContext(singleThreadDispatcher) {
+          val model =
+              CompiledModel.create(
+                context.assets,
+                "segmentation_multiclass_cpu_gpu.tflite",
+                CompiledModel.Options(acceleratorType),
+                env,
+              )
+          segmenter = Segmenter(model, coloredLabels)
+        }
+        
+        // Success! Update active accelerator and emit
+        _currentAccelerator.emit(accelerator)
+        Log.i(TAG, "✅ Successfully initialized with $accelerator")
+        return
+        
+      } catch (e: Exception) {
+        lastException = e
+        Log.w(TAG, "❌ $accelerator initialization failed: ${e.message}, trying next...")
+      }
+    }
+
+    // All backends failed
+    val error = Exception("All accelerators failed to initialize. Last error: ${lastException?.message}", lastException)
+    Log.e(TAG, "Failed to initialize any accelerator", error)
+    _error.emit(error)
+  }
+
+  /** Init a CompiledModel from AI Pack with specific accelerator (manual override). */
   suspend fun initSegmenter(acceleratorEnum: AcceleratorEnum = AcceleratorEnum.CPU) {
     cleanup()
     try {
+      Log.i(TAG, "Manual initialization with $acceleratorEnum...")
+      
       val accelerator = toAccelerator(acceleratorEnum)
       val env = Environment.create(BuiltinNpuAcceleratorProvider(context))
 
@@ -76,10 +133,14 @@ class ImageSegmentationHelper(private val context: Context) {
               env,
             )
         segmenter = Segmenter(model, coloredLabels)
-        Log.d(TAG, "Created an image segmenter")
       }
+      
+      // Update active accelerator
+      _currentAccelerator.emit(acceleratorEnum)
+      Log.i(TAG, "✅ Successfully initialized with $acceleratorEnum")
+      
     } catch (e: Exception) {
-      Log.i(TAG, "Create LiteRT from selfie_multiclass is failed: ${e.message}")
+      Log.e(TAG, "❌ $acceleratorEnum initialization failed: ${e.message}")
       _error.emit(e)
     }
   }
